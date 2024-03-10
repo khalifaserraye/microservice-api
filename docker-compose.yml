@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    command: bash -c 'while !</dev/tcp/db/${POSTGRES_PORT}; do sleep 1; done; uvicorn microserv_api:app --host ${API_HOST}'
+    volumes:
+      - .:/microserv
+    ports:
+      - ${API_PORT}:8000
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data/
+      - ./initdb:/docker-entrypoint-initdb.d/
+    expose:
+      - ${POSTGRES_PORT}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data
+  # db:
+  #   image: postgres:15.2-alpine
+  #   volumes:
+  #     - ./postgres_data:/var/lib/postgresql/data/
+  #     - ./initdb:/docker-entrypoint-initdb.d/
+  #   environment:
+  #     - POSTGRES_USER=${POSTGRES_USER}
+  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #     - POSTGRES_DB=${POSTGRES_DB}
+  #   expose:
+  #     - ${POSTGRES_PORT}
+  #   ports:
+  #     - ${POSTGRES_PORT}:${POSTGRES_PORT}

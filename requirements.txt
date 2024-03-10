@@ -1,0 +1,5 @@
+asyncpg
+fastapi
+uvicorn
+SQLAlchemy
+psycopg2-binary
